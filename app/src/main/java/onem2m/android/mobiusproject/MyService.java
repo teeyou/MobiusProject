@@ -133,7 +133,7 @@ public class MyService extends Service {
                 List<Result> resultList = response.body().getResult();
                 Result ourData = resultList.get(0);
 
-                long timestamp = (long) (ourData.DEVICE_FIELD05 * 1000) - (9 * 60 * 60);
+                long timestamp = (long) ((resultList.get(0).DEVICE_FIELD05 - (9 * 60 * 60)) * 1000 ); //unixtime -> 한국시간으로 변환
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String date = sdf.format(new Date(timestamp));
 
