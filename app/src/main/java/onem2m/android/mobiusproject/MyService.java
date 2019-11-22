@@ -62,23 +62,6 @@ public class MyService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-//        Log.d("MYTAG", "서비스에서... " + MainActivity.sensorDataList.get(0).getDEVICE_SCODE());
-//        AsyncTask task = new AsyncTask() {
-//            @Override
-//            protected Object doInBackground(Object[] objects) {
-//                while(flag) {
-//                    requestData();
-//                    try {
-//                        Thread.sleep(3000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                return null;
-//            }
-//        }.execute();
-
         new MyAsyncTask().execute();
 
         return Service.START_REDELIVER_INTENT;
