@@ -12,8 +12,11 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -31,7 +34,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView temperature;
     private TextView humidity;
     private TextView light;
+    private TextView moving_count_ten;
+    private TextView last_moving_time;
+    private TextView co2;
+    private TextView tVOC;
     private TextView data_reg_dtm;
+
 
     private Button mButton;
 
@@ -52,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
         mButton = findViewById(R.id.btn);
         btn_start_foreground = findViewById(R.id.startForeground);
         btn_stop_foreground = findViewById(R.id.stopForeground);
+        moving_count_ten = findViewById(R.id.moving_count_ten);
+        last_moving_time = findViewById(R.id.last_moving_time);
+        co2 = findViewById(R.id.co2);
+        tVOC = findViewById(R.id.tVOC);
 
         requestData();
 
@@ -115,10 +127,19 @@ public class MainActivity extends AppCompatActivity {
                 List<Result> resultList = response.body().getResult();
                 sensorDataList.addAll(resultList);
 
+                long timestamp = (long) (resultList.get(0).DEVICE_FIELD05 * 1000) - (9 * 60 * 60); //unixtime -> 한국시간으로 변환
+                
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String date = sdf.format(new Date(timestamp));
+
                 scode.setText("scode : " + resultList.get(0).getDEVICE_SCODE());
                 temperature.setText("temperature : " + resultList.get(0).getDEVICE_FIELD01());
                 humidity.setText("humidity : " + resultList.get(0).getDEVICE_FIELD02());
                 light.setText("light : " + resultList.get(0).getDEVICE_FIELD03());
+                moving_count_ten.setText("10min_moving_count: " + resultList.get(0).getDEVICE_FIELD04());
+                last_moving_time.setText("last_moving_time: " + date);
+                co2.setText("CO2 : " + resultList.get(0).getDEVICE_FIELD10());
+                tVOC.setText("tVOC : " + resultList.get(0).getDEVICE_FIELD11());
                 data_reg_dtm.setText("data_reg_dtm : " + resultList.get(0).getDEVICE_DATA_REG_DTM());
             }
 

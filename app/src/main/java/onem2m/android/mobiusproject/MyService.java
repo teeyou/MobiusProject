@@ -16,6 +16,8 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.Interceptor;
@@ -42,7 +44,7 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("MYTAG", "onCreate가 호출되나?");
+        Log.d("MYTAG", "onCreate");
         flag = true;
         foregroundService();
     }
@@ -51,7 +53,7 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("MYTAG", "Destroy가 호출되나?");
+        Log.d("MYTAG", "Destroy");
         flag = false;
         stopForeground(true);
         this.stopSelf();
@@ -61,22 +63,24 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 //        Log.d("MYTAG", "서비스에서... " + MainActivity.sensorDataList.get(0).getDEVICE_SCODE());
-        AsyncTask task = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                while(flag) {
-//                    Log.d("MYTAG", "온도 : " + MainActivity.sensorDataList.get(0).getDEVICE_FIELD01());
-                    requestData();
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+//        AsyncTask task = new AsyncTask() {
+//            @Override
+//            protected Object doInBackground(Object[] objects) {
+//                while(flag) {
+//                    requestData();
+//                    try {
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                return null;
+//            }
+//        }.execute();
 
-                return null;
-            }
-        }.execute();
+        new MyAsyncTask().execute();
+
         return Service.START_REDELIVER_INTENT;
     }
 
@@ -125,9 +129,23 @@ public class MyService extends Service {
             public void onResponse(Call<Sensor> call, retrofit2.Response<Sensor> response) {
                 Log.d("MYTAG", response.body().getCode());
                 Log.d("MYTAG", response.body().getMessage());
-                Log.d("MYTAG", response.body().getTotal());
+
                 List<Result> resultList = response.body().getResult();
                 Result ourData = resultList.get(0);
+
+                long timestamp = (long) (ourData.DEVICE_FIELD05 * 1000) - (9 * 60 * 60);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String date = sdf.format(new Date(timestamp));
+
+                Log.d("MYTAG","scode : " + resultList.get(0).getDEVICE_SCODE());
+                Log.d("MYTAG","temperature : " + resultList.get(0).getDEVICE_FIELD01());
+                Log.d("MYTAG","humidity : " + resultList.get(0).getDEVICE_FIELD02());
+                Log.d("MYTAG","light : " + resultList.get(0).getDEVICE_FIELD03());
+                Log.d("MYTAG","10min_moving_count: " + resultList.get(0).getDEVICE_FIELD04());
+                Log.d("MYTAG","last_moving_time: " + date);
+                Log.d("MYTAG","CO2 : " + resultList.get(0).getDEVICE_FIELD10());
+                Log.d("MYTAG","tVOC : " + resultList.get(0).getDEVICE_FIELD11());
+                Log.d("MYTAG","data_reg_dtm : " + resultList.get(0).getDEVICE_DATA_REG_DTM());
 
                 if(ourData.getDEVICE_FIELD01() > 20) {
                     show_noti();
@@ -158,5 +176,22 @@ public class MyService extends Service {
         }
 
         startForeground(2, builder.build());
+    }
+
+    class MyAsyncTask extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+
+            while(flag) {
+                requestData();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
     }
 }
